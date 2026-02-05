@@ -54,16 +54,16 @@ public actor NQueensEngine {
     }
 
     public func reset(size: Int? = nil) {
-        let s = size ?? board.size
-        board = Board(size: s)
-        index = AttackIndex(size: s, queens: [])
+        let newSize = size ?? board.size
+        board = Board(size: newSize)
+        index = AttackIndex(size: newSize, queens: [])
     }
 
-    private func validate(_ p: Position) throws {
+    func validate(_ p: Position) throws {
         guard isValid(p) else { throw PlacementError.invalidPosition }
     }
 
-    private func isValid(_ p: Position) -> Bool {
+    func isValid(_ p: Position) -> Bool {
         p.row >= 0 && p.column >= 0 && p.row < board.size && p.column < board.size
     }
 }
