@@ -12,9 +12,9 @@ public actor NQueensEngine {
 
     private var index: AttackIndex
 
-    public init(size: Int) {
-        self.board = Board(size: size)
-        self.index = AttackIndex(size: size, queens: [])
+    public init(size: Int, queens: Set<Position> = []) {
+        self.board = Board(size: size, queens: queens)
+        self.index = AttackIndex(size: size, queens: queens)
     }
 
     public var remainingQueens: Int {
