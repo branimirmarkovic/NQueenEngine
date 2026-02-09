@@ -7,12 +7,17 @@
 
 import Foundation
 
+public enum EngineError: Error, Equatable {
+    case invalidBoardSize
+}
+
 public actor NQueensEngine {
     public private(set) var board: Board
 
     private var index: AttackIndex
 
-    public init(size: Int, queens: Set<Position> = []) {
+    public init(size: Int, queens: Set<Position> = []) throws {
+        guard size >= 3 else { throw EngineError.invalidBoardSize }
         self.board = Board(size: size, queens: queens)
         self.index = AttackIndex(size: size, queens: queens)
     }
