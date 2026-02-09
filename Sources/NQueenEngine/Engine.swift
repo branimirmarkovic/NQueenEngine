@@ -68,6 +68,19 @@ public actor NQueensEngine {
         }
         return result
     }
+    
+    public func conflictingPositions() -> [Position] {
+        var result: [Position] = []
+        for row in 0..<board.size {
+            for column in 0..<board.size {
+                let pos = Position(row: row, column: column)
+                if !isOccupied(pos) && index.wouldConflict(pos) {
+                    result.append(pos)
+                }
+            }
+        }
+        return result
+    }
 
     func validate(_ p: Position) throws {
         guard isValid(p) else { throw PlacementError.invalidPosition }
