@@ -57,6 +57,19 @@ public actor NQueensEngine {
 
         index.remove(p)
     }
+    
+    public func availablePositions() -> [Position] {
+        var result: [Position] = []
+        for row in 0..<board.size {
+            for column in 0..<board.size {
+                let pos = Position(row: row, column: column)
+                if !isOccupied(pos) && !index.wouldConflict(pos) {
+                    result.append(pos)
+                }
+            }
+        }
+        return result
+    }
 
     public func reset(size: Int? = nil) {
         let newSize = size ?? board.size
