@@ -70,16 +70,20 @@ public actor NQueensEngine {
     }
     
     public func conflictingPositions() -> [Position] {
-        var result: [Position] = []
-        for row in 0..<board.size {
-            for column in 0..<board.size {
-                let pos = Position(row: row, column: column)
-                if !isOccupied(pos) && index.wouldConflict(pos) {
-                    result.append(pos)
-                }
+        var tempIndex = index
+        var conflicts: [Position] = []
+        
+        for queen in board.queens {
+            tempIndex.remove(queen)
+            if tempIndex.wouldConflict(queen) {
+                conflicts.append(queen)
             }
+            tempIndex.insert(queen)
         }
-        return result
+        
+        return conflicts.sorted { lhs, rhs in
+            lhs.row == rhs.row ? lhs.column < rhs.column : lhs.row < rhs.row
+        }
     }
 
     func validate(_ p: Position) throws {
