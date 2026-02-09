@@ -229,6 +229,40 @@ struct EngineTests: Sendable {
         }
     }
     
+    @Test func availablePositions_onEmptyBoard_returnsAllPositions() async throws {
+        let size = 4
+        let sut = try makeSUT(size: size)
+        let expected = Set((0..<size).flatMap { row in (0..<size).map { column in Position(row: row, column: column) } })
+        let result = Set(await sut.availablePositions())
+        #expect(result == expected)
+    }
+    
+    @Test func availablePositions_withPlacedQueen_blocksAttackedPositions() async throws {
+        let size = 4
+        let queen = Position(row: 1, column: 1)
+        let sut = try makeSUT(size: size, queens: [queen])
+        let unavailable = Set([
+            // Same row and column
+            Position(row: 1, column: 0), Position(row: 1, column: 1), Position(row: 1, column: 2), Position(row: 1, column: 3),
+            Position(row: 0, column: 1), Position(row: 1, column: 1), Position(row: 2, column: 1), Position(row: 3, column: 1),
+            // Diagonals
+            Position(row: 0, column: 0), Position(row: 0, column: 2), Position(row: 2, column: 0), Position(row: 2, column: 2),
+            Position(row: 3, column: 3), Position(row: 3, column: 1)
+        ])
+        let expected = Set((0..<size).flatMap { row in (0..<size).map { column in Position(row: row, column: column) } })
+            .subtracting(unavailable)
+        let result = Set(await sut.availablePositions())
+        #expect(result == expected)
+    }
+    
+    @Test func availablePositions_whenNoAvailablePositions_returnsEmpty() async throws {
+        let size = 3
+        let queens: Set<Position> = [Position(row: 0, column: 0), Position(row: 1, column: 1), Position(row: 2, column: 2)]
+        let sut = try makeSUT(size: size, queens: queens)
+        let result = await sut.availablePositions()
+        #expect(result.isEmpty)
+    }
+    
     typealias SUT = NQueensEngine
     private func makeSUT(size: Int = 3, queens: Set<Position> = []) throws -> SUT {
         try NQueensEngine(size:size, queens: queens)
