@@ -223,8 +223,8 @@ struct EngineTests: Sendable {
         }
     }
 
-    @Test func init_givenInvalidBoardSize_throwsInvalidBoardSize() async {
-        await #expect(throws: EngineError.invalidBoardSize) {
+    @Test func init_givenInvalidBoardSize_throwsInvalidBoardSize()  {
+        #expect(throws: EngineError.invalidBoardSize) {
             _ = try makeSUT(size: 2)
         }
     }
