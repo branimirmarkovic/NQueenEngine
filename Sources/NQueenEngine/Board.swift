@@ -26,8 +26,6 @@ public struct Position: Hashable, Sendable {
     }
 }
 
-
-
 public enum PlacementError: Error, Equatable, Sendable {
     case invalidPosition
     case positionOccupied
