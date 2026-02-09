@@ -52,7 +52,7 @@ struct EngineTests: Sendable {
     ) async throws {
         let sut = try makeSUT(size: size, queens: placedQueens)
         
-        #expect(await sut.remainingQueens == expectedCount)
+        #expect(await sut.remainingQueensCount == expectedCount)
     }
     
     @Test(arguments: [
@@ -83,7 +83,7 @@ struct EngineTests: Sendable {
         try await sut.place(position)
 
         #expect(await sut.board.queens == Set([position]))
-        #expect(await sut.remainingQueens == 3)
+        #expect(await sut.remainingQueensCount == 3)
     }
 
     @Test func place_invalidPosition_throwsInvalidPosition() async throws {
@@ -116,7 +116,7 @@ struct EngineTests: Sendable {
         let position = Position(row: 0, column: 0)
         let sut = try makeSUT(size: 4, queens: [position])
 
-        await sut.remove(position)
+        try await sut.remove(position)
 
         #expect(await sut.board.queens.isEmpty)
     }
@@ -125,9 +125,9 @@ struct EngineTests: Sendable {
         let existing = Position(row: 0, column: 0)
         let sut = try makeSUT(size: 4, queens: [existing])
 
-        await sut.remove(Position(row: 10, column: 10))
-
-        #expect(await sut.board.queens == Set([existing]))
+        await #expect(throws: PlacementError.invalidPosition) {
+            try await sut.remove(Position(row: 10, column: 10))
+        }
     }
 
     @Test func toggle_unoccupiedPosition_placesQueen() async throws {
@@ -155,26 +155,6 @@ struct EngineTests: Sendable {
             try await sut.toggle(Position(row: 99, column: 0))
         }
     }
-
-    @Test func reset_withoutSize_clearsBoard() async throws {
-        let sut = try makeSUT(size: 4, queens: [Position(row: 0, column: 0)])
-
-        await sut.reset()
-
-        #expect(await sut.board.size == 4)
-        #expect(await sut.board.queens.isEmpty)
-        #expect(await sut.remainingQueens == 4)
-    }
-
-    @Test func reset_withSize_resizesAndClearsBoard() async throws {
-        let sut = try makeSUT(size: 4, queens: [Position(row: 0, column: 0)])
-
-        await sut.reset(size: 6)
-
-        #expect(await sut.board.size == 6)
-        #expect(await sut.board.queens.isEmpty)
-        #expect(await sut.remainingQueens == 6)
-    }
         
     @Test func place_onOccupiedPosition_throwsOccupied() async throws {
         let position = Position(row: 2, column: 2)
@@ -197,17 +177,10 @@ struct EngineTests: Sendable {
 
     @Test func remove_fromEmptyBoard_noChange() async throws {
         let sut = try makeSUT(size: 4)
-        await sut.remove(Position(row: 1, column: 1))
+        try await sut.remove(Position(row: 1, column: 1))
         #expect(await sut.board.queens.isEmpty)
     }
 
-    @Test func reset_withZeroSize_resultsInZeroBoard() async throws {
-        let sut = try makeSUT(size: 4, queens: [Position(row: 0, column: 0)])
-        await sut.reset(size: 0)
-        #expect(await sut.board.size == 0)
-        #expect(await sut.board.queens.isEmpty)
-        #expect(await sut.remainingQueens == 0)
-    }
 
     @Test func place_allQueensPlaced_throwsNoQueensRemaining() async throws {
         let positions = Set([

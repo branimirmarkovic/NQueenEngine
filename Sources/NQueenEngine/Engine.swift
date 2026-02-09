@@ -22,40 +22,38 @@ public actor NQueensEngine {
         self.index = AttackIndex(size: size, queens: queens)
     }
 
-    public var remainingQueens: Int {
+    public var remainingQueensCount: Int {
         max(0, board.size - board.queens.count)
     }
 
-    public func isOccupied(_ p: Position) -> Bool {
-        board.queens.contains(p)
+    public func isOccupied(_ position: Position) -> Bool {
+        board.queens.contains(position)
     }
 
-    public func toggle(_ p: Position) throws {
-        try validate(p)
-
-        if board.queens.contains(p) {
-            remove(p)
+    public func toggle(_ position: Position) throws {
+        if board.queens.contains(position) {
+            try remove(position)
         } else {
-            try place(p)
+            try place(position)
         }
     }
 
-    public func place(_ p: Position) throws {
-        try validate(p)
+    public func place(_ position: Position) throws {
+        try validate(position)
 
-        guard remainingQueens > 0 else { throw PlacementError.noQueensRemaining }
-        guard board.queens.contains(p) == false else { throw PlacementError.positionOccupied }
-        guard index.wouldConflict(p) == false else { throw PlacementError.conflicts }
+        guard remainingQueensCount > 0 else { throw PlacementError.noQueensRemaining }
+        guard board.queens.contains(position) == false else { throw PlacementError.positionOccupied }
+        guard index.wouldConflict(position) == false else { throw PlacementError.conflicts }
 
-        board.queens.insert(p)
-        index.insert(p)
+        board.queens.insert(position)
+        index.insert(position)
     }
 
-    public func remove(_ p: Position) {
-        guard isValid(p) else { return }
-        guard board.queens.remove(p) != nil else { return }
+    public func remove(_ position: Position) throws {
+        try validate(position)
+        guard board.queens.remove(position) != nil else { return }
 
-        index.remove(p)
+        index.remove(position)
     }
     
     public func availablePositions() -> [Position] {
@@ -69,12 +67,6 @@ public actor NQueensEngine {
             }
         }
         return result
-    }
-
-    public func reset(size: Int? = nil) {
-        let newSize = size ?? board.size
-        board = Board(size: newSize)
-        index = AttackIndex(size: newSize, queens: [])
     }
 
     func validate(_ p: Position) throws {
