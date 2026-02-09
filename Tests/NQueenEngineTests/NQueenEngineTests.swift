@@ -182,7 +182,52 @@ struct EngineTests: Sendable {
         #expect(await sut.remainingQueens == 6)
     }
         
-        
+    @Test func place_onOccupiedPosition_throwsOccupied() async throws {
+        let position = Position(row: 2, column: 2)
+        let conflictingPosition = Position(row: 3, column: 3)
+        let sut = makeSUT(size: 4, queens: [position])
+
+        await #expect(throws: PlacementError.conflicts) {
+            try await sut.place(conflictingPosition)
+        }
+    }
+
+    @Test func place_onBoardEdge_placesQueen() async throws {
+        let position = Position(row: 0, column: 3)
+        let sut = makeSUT(size: 4)
+
+        try await sut.place(position)
+
+        #expect(await sut.board.queens == Set([position]))
+    }
+
+    @Test func remove_fromEmptyBoard_noChange() async {
+        let sut = makeSUT(size: 4)
+        await sut.remove(Position(row: 1, column: 1))
+        #expect(await sut.board.queens.isEmpty)
+    }
+
+    @Test func reset_withZeroSize_resultsInZeroBoard() async throws {
+        let sut = makeSUT(size: 4, queens: [Position(row: 0, column: 0)])
+        await sut.reset(size: 0)
+        #expect(await sut.board.size == 0)
+        #expect(await sut.board.queens.isEmpty)
+        #expect(await sut.remainingQueens == 0)
+    }
+
+    @Test func place_allQueensPlaced_throwsNoQueensRemaining() async {
+        let positions = Set([
+            Position(row: 0, column: 0),
+            Position(row: 1, column: 1),
+            Position(row: 2, column: 2),
+            Position(row: 3, column: 3)
+        ])
+        let sut = makeSUT(size: 4, queens: positions)
+        // All queens placed, try placing another
+        await #expect(throws: PlacementError.noQueensRemaining) {
+            try await sut.place(Position(row: 0, column: 1))
+        }
+    }
     
     typealias SUT = NQueensEngine
     private func makeSUT(size: Int = 3, queens: Set<Position> = []) -> SUT {
