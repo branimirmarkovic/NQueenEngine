@@ -240,6 +240,39 @@ struct EngineTests: Sendable {
         #expect(result.isEmpty)
     }
     
+    @Test func conflictingPositions_withNoConflicts_returnsEmpty() async throws {
+        let queens: Set<Position> = [
+            Position(row: 0, column: 1),
+            Position(row: 1, column: 3),
+            Position(row: 2, column: 0),
+            Position(row: 3, column: 2)
+        ]
+        let sut = try makeSUT(size: 4, queens: queens)
+        
+        let result = Set(sut.conflictingPositions())
+        #expect(result.isEmpty)
+    }
+    
+    @Test func conflictingPositions_withRowConflict_returnsOnlyConflictingQueens() async throws {
+        let conflictA = Position(row: 2, column: 0)
+        let conflictB = Position(row: 2, column: 4)
+        let safe = Position(row: 4, column: 1)
+        let sut = try makeSUT(size: 5, queens: [conflictA, conflictB, safe])
+        
+        let result = Set(sut.conflictingPositions())
+        #expect(result == Set([conflictA, conflictB]))
+    }
+    
+    @Test func conflictingPositions_withDiagonalConflict_returnsOnlyConflictingQueens() async throws {
+        let conflictA = Position(row: 0, column: 0)
+        let conflictB = Position(row: 2, column: 2)
+        let safe = Position(row: 4, column: 1)
+        let sut = try makeSUT(size: 5, queens: [conflictA, conflictB, safe])
+        
+        let result = Set(sut.conflictingPositions())
+        #expect(result == Set([conflictA, conflictB]))
+    }
+    
     typealias SUT = NQueensEngine
     private func makeSUT(size: Int = 3, queens: Set<Position> = []) throws -> SUT {
         try NQueensEngine(size:size, queens: queens)
