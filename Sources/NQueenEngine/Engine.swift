@@ -11,7 +11,7 @@ public enum EngineError: Error, Equatable {
     case invalidBoardSize
 }
 
-public actor NQueensEngine {
+public final class NQueensEngine {
     public private(set) var board: Board
 
     private var index: AttackIndex
