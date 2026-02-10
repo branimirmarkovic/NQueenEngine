@@ -30,20 +30,23 @@ public actor NQueensEngine {
         board.queens.contains(position)
     }
 
-    public func toggle(_ position: Position) throws {
+    public func toggle(_ position: Position, checkConflict: Bool = true) throws {
         if board.queens.contains(position) {
             try remove(position)
         } else {
-            try place(position)
+            try place(position, checkConflict: checkConflict)
         }
     }
 
-    public func place(_ position: Position) throws {
+    public func place(_ position: Position, checkConflict: Bool = true) throws {
         try validate(position)
 
         guard remainingQueensCount > 0 else { throw PlacementError.noQueensRemaining }
         guard board.queens.contains(position) == false else { throw PlacementError.positionOccupied }
-        guard index.wouldConflict(position) == false else { throw PlacementError.conflicts }
+        if checkConflict {
+            guard index.wouldConflict(position) == false else { throw PlacementError.conflicts }
+        }
+        
 
         board.queens.insert(position)
         index.insert(position)
@@ -70,17 +73,25 @@ public actor NQueensEngine {
     }
     
     public func conflictingPositions() -> [Position] {
-        var tempIndex = index
-        var conflicts: [Position] = []
-        
+        var rowCounts: [Int: Int] = [:]
+        var columnCounts: [Int: Int] = [:]
+        var diagonalDownCounts: [Int: Int] = [:]
+        var diagonalUpCounts: [Int: Int] = [:]
+
         for queen in board.queens {
-            tempIndex.remove(queen)
-            if tempIndex.wouldConflict(queen) {
-                conflicts.append(queen)
-            }
-            tempIndex.insert(queen)
+            rowCounts[queen.row, default: 0] += 1
+            columnCounts[queen.column, default: 0] += 1
+            diagonalDownCounts[queen.row - queen.column, default: 0] += 1
+            diagonalUpCounts[queen.row + queen.column, default: 0] += 1
         }
-        
+
+        let conflicts = board.queens.filter { queen in
+            (rowCounts[queen.row] ?? 0) > 1 ||
+            (columnCounts[queen.column] ?? 0) > 1 ||
+            (diagonalDownCounts[queen.row - queen.column] ?? 0) > 1 ||
+            (diagonalUpCounts[queen.row + queen.column] ?? 0) > 1
+        }
+
         return conflicts.sorted { lhs, rhs in
             lhs.row == rhs.row ? lhs.column < rhs.column : lhs.row < rhs.row
         }
